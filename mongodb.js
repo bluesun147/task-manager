@@ -21,6 +21,16 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
 
     const db = client.db(databaseName); // db reference. 연결
     
+    db.collection('users').deleteMany({
+        age: 24
+    }).then((result) => {
+        console.log(result);
+    }).catch((error) => {
+        console.log(error);
+    })
+
+
+
     // // UPDATE
     // db.collection('users').updateOne({
     //     _id: new ObjectID('6229d9db6592486a4429920f')
@@ -36,20 +46,6 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
     // }).catch((error) => {
     //     console.log(error);
     // }); // 체이닝
-
-    db.collection('tasks').updateMany({
-        completed: false
-    }, {
-        $set: {
-            completed: true
-        }
-    }).then((result) => {
-        console.log(result);
-    }).catch((error) => {
-        console.log(error);
-    })
-
-
 
 
     // // READ. search 1 user
