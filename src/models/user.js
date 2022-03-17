@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-
+// 유저 모델
 const User = mongoose.model('User', {
     name: { // type, validation... 속성
         type: String,
