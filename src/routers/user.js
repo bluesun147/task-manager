@@ -90,7 +90,16 @@ router.patch('/users/:id', async (req, res) => { // http method, update
     }
 
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true}) // id, 바꿀값, 옵션
+        // findByIdAndUpdate bypasses mongoose. it performs direct operation on db. 그래서 runValidators 옵션 작성.
+        const user = await User.findById(req.params.id);
+
+        updates.forEach((update) => {
+            user[update] = req.body[update];
+        })
+
+        await user.save();
+
+        // const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true}) // id, 바꿀값, 옵션
 
         if (!user) {
             return res.status(404).send();

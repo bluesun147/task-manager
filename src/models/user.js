@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 // 유저 모델
-const User = mongoose.model('User', {
+
+const userSchema = new mongoose.Schema({ // model()에 두번째 인자로 들어가는 값. 속성들
     name: { // type, validation... 속성
         type: String,
         required: true, // 필수로 입력해야 하는 속성
@@ -41,6 +43,19 @@ const User = mongoose.model('User', {
             }
         }
     }
-})
+});
+
+// pre는 'save'되기 전 실행. 미들웨어
+userSchema.pre('save', async function(next) { // this binding 해야 하므로
+    const user = this;
+
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8);
+    }
+
+    next();
+});
+
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;
