@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 // 유저 모델
 
 const userSchema = new mongoose.Schema({ // model()에 두번째 인자로 들어가는 값. 속성들
@@ -21,15 +22,6 @@ const userSchema = new mongoose.Schema({ // model()에 두번째 인자로 들�
             }
         }
     },
-    age: { // 필수 아님
-        type: Number,
-        default: 0, // 입력 안했을 시 기본 값
-        validate(value) {
-            if (value < 0) {
-                throw new Error('Age must be positive number.');
-            }
-        }
-    },
     password: {
         type: String,
         required: true,
@@ -43,8 +35,34 @@ const userSchema = new mongoose.Schema({ // model()에 두번째 인자로 들�
                 throw new Error('pw should not contain the word "password"');
             }
         }
-    }
+    },
+    age: { // 필수 아님
+        type: Number,
+        default: 0, // 입력 안했을 시 기본 값
+        validate(value) {
+            if (value < 0) {
+                throw new Error('Age must be positive number.');
+            }
+        }
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 });
+
+userSchema.methods.generateAuthToken = async function () { // 토큰 생성
+    const user = this;
+    const token = jwt.sign({_id: user._id.toString()}, 'thisismynewcourse'); // {provide a payload that uniquely identifies the user}, 'secret string'
+
+    user.tokens = user.tokens.concat({token: token});
+
+    await user.save(); // token을 db에 저장
+
+    return token;
+}
 
 userSchema.statics.findByCredentials = async (email, password) => {
     const user = await User.findOne({ email: email }); // provide object with our search criteria 

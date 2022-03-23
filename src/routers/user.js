@@ -5,18 +5,15 @@ const User = require('../models/user'); // 유저 모델
 
 const router = new express.Router(); // create router
 
-router.get('/test', (req, res) => { // set up routes
-    res.send('qweqwewqewqf');
-})
-// app.use(router); // register router
-
-router.post('/users', async (req, res) => { // postman 통해 확인해보기
+// postman 통해 확인해보기
+router.post('/users', async (req, res) => { // 유저 생성
     console.log(req.body); // { name: 'Andrew', email: 'andrew@example.com', password: 'Red123!$' }
     const user = new User(req.body); // create new user. 생성자
 
     try {
-        await user.save();
-        res.status(201).send(user);
+        await user.save(); // user를 db에 저장
+        const token = await user.generateAuthToken();
+        res.status(201).send({user, token});
     } catch (e) {
         res.status(400).send(e);
     }
@@ -33,7 +30,8 @@ router.post('/users', async (req, res) => { // postman 통해 확인해보기
 router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
-        res.send(user);
+        const token = await user.generateAuthToken(); // 직접 정의 함수
+        res.send({user, token});
     } catch (e) {
         res.status(400).send();
     }
