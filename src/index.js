@@ -11,10 +11,33 @@ const taskRouter = require('./routers/task');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// app.use((req, res, next) => {
+//     if (req.method === 'GET') {
+//         res.send('GET requests are disabled');
+//     } else {
+//         next();
+//     }
+//     console.log("!!!", req.method, req.path);
+//     //next(); // 없으면 다음 미들웨어로 안넘어감
+// });
+
+app.use((req, res, next) => {
+    if (req.method) {
+        res.status(503).send('nonononon');
+    }
+})
+
+
+
 app.use(express.json()); // automatically parse json to object
 
 app.use(userRouter); // register user router
 app.use(taskRouter); // register task router
+
+// without middleware: new request -> run route handler
+// with middleware: new request -> do something -> run route handler
+
+
 
 app.listen(port, () => {
     console.log('Server is up on port', port);
