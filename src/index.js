@@ -21,11 +21,11 @@ const port = process.env.PORT || 3000;
 //     //next(); // 없으면 다음 미들웨어로 안넘어감
 // });
 
-app.use((req, res, next) => {
-    if (req.method) {
-        res.status(503).send('nonononon');
-    }
-})
+// app.use((req, res, next) => {
+//     if (req.method) {
+//         res.status(503).send('nonononon');
+//     }
+// })
 
 
 

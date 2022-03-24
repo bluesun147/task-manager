@@ -3,6 +3,8 @@ const User = require('../models/user'); // 유저 모델
 
 // 유저 라우터. index.js에서 분리함.
 
+const auth = require('../middleware/auth') // auth middleware를 individal route에 연결하자
+
 const router = new express.Router(); // create router
 
 // postman 통해 확인해보기
@@ -37,20 +39,17 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
-router.get('/users', async (req, res) => {
-
-    try {
-        const users = await User.find({});
-        res.send(users);
-    } catch (e) {
-        res.status(500).send();
-    }
-
-    // User.find({}).then((users) => { // {}안에 조건. 없으면 모두 읽음
+// to add middleware to an individual route, pass it in as an argument. 핸들러 전에. (두번떄 인자)
+router.get('/users/me', auth, async (req, res) => {
+    
+    res.send(req.user);
+    
+    // try { // '/users'
+    //     const users = await User.find({});
     //     res.send(users);
-    // }).catch((e) => {
-    //     res.status(500).send(); // server error
-    // });
+    // } catch (e) {
+    //     res.status(500).send();
+    // }
 });
 
  // fetch individual user by id. : route parameter
