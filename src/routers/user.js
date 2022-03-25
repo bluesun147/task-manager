@@ -39,6 +39,33 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
+// 해당 세션만 로그아웃
+router.post('/users/logout', auth, async (req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token !== req.token; // not equal인 경우 체크
+        })
+        await req.user.save();
+
+        res.send();
+    } catch (e) {
+        res.status(500).send();
+    }
+})
+
+// 모든 세션에서 log out 
+// 로그인 할때마다 token 다름. 여러번(여러 기기로) 로그인한것 다 로그아웃 시키기
+router.post('/users/logoutAll', auth, async(req, res) => {
+    try {
+        req.user.tokens = []; // 다 지움
+        await req.user.save(); // 저장
+
+        res.send();
+    } catch (e) {
+        res.status(500).send();
+    }
+})
+
 // to add middleware to an individual route, pass it in as an argument. 핸들러 전에. (두번떄 인자)
 router.get('/users/me', auth, async (req, res) => {
     
