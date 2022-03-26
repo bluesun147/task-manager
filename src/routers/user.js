@@ -33,7 +33,8 @@ router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         const token = await user.generateAuthToken(); // 직접 정의 함수
-        res.send({user, token});
+        // res.send({user: user.getPublicProfile(), token}); // getPublicProfile: user password, tokens 숨기기 위해
+        res.send({user: user, token});
     } catch (e) {
         res.status(400).send();
     }

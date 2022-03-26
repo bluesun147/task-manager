@@ -53,6 +53,19 @@ const userSchema = new mongoose.Schema({ // model()에 두번째 인자로 들�
     }]
 });
 
+// userSchema.methods: for methods on the instance and individual user. 인스턴스에 대한 메서드
+// userSchema.methods.getPublicProfile = function() { // routers/user.js에서 res.send({user: user.getPublicProfile(), token}) 처럼 사용
+// this 사용하기 때문에 화살표 함수 안씀. toJSON으로 작성하면 res.send({user: user, token}) 에도 해당 메소드 적용 됨. 위랑 같은 결과
+userSchema.methods.toJSON = function() { // toJSON은 객체를 문자열로 반환하는데, 반환하는 문자열 조작 가능. 여기서는 pw, tokens를 제거
+    const user = this;
+    const userObject = user.toObject(); // raw profile data 얻기 위해. 
+    
+    delete userObject.password; // delete: obj로부터 해당 프로퍼티 삭제. 객체 메서드
+    delete userObject.tokens;
+
+    return userObject;
+}
+
 userSchema.methods.generateAuthToken = async function () { // 토큰 생성
     const user = this;
     const token = jwt.sign({_id: user._id.toString()}, 'thisismynewcourse'); // {provide a payload that uniquely identifies the user}, 'secret string'
@@ -64,7 +77,8 @@ userSchema.methods.generateAuthToken = async function () { // 토큰 생성
     return token;
 }
 
-userSchema.statics.findByCredentials = async (email, password) => {
+// userSchema.statics: for methods on the actual User. 자체에 대한 메서드
+userSchema.statics.findByCredentials = async (email, password) => { 
     const user = await User.findOne({ email: email }); // provide object with our search criteria 
 
     if (!user) {

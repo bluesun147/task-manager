@@ -4,6 +4,7 @@ const userRouter = require('./routers/user');
 const taskRouter = require('./routers/task');
 
 // 데이터베이스 연결: /Users/blues/mongodb/bin/./mongod.exe --dbpath=/Users/blues/mongodb-data
+// npm run dev
 
 // index.js creates the express app and runs it
 // what the express app actually does is defined in router files.
@@ -55,15 +56,3 @@ app.listen(port, () => {
 //     const isMatch = await bcrypt.compare('Red12345!', hashedPassword); // 원본 pw를 해싱한것과 데이터에 저장해둔 해시된 pw를 비교
 //     console.log(isMatch);
 // }
-
-const jwt = require('jsonwebtoken'); // authenticate
-
-const myFunction = async () => {
-    const token = jwt.sign({ _id: 'abc123' }, 'thisismynewcourse', {expiresIn: '3 seconds'});
-    console.log(token);
-
-    const data = jwt.verify(token, 'thisismynewcourse');
-    console.log(data);
-}
-
-myFunction()
