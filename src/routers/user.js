@@ -15,18 +15,10 @@ router.post('/users', async (req, res) => { // 유저 생성
     try {
         await user.save(); // user를 db에 저장
         const token = await user.generateAuthToken();
-        res.status(201).send({user, token});
+        res.status(201).send({ user, token });
     } catch (e) {
         res.status(400).send(e);
     }
-
-    // user.save().then(() => { // db에 데이터 저장. promise 리턴
-    //     res.status(201).send(user); // 기본은 200(ok). 201은 created. 동작에 영향x, 명확한 구분 위해
-    // }).catch((e) => {
-    //     // res.status(400);
-    //     // res.send(e);
-    //     res.status(400).send(e); // 체이닝
-    // });
 });
 
 router.post('/users/login', async (req, res) => {
@@ -34,7 +26,7 @@ router.post('/users/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.email, req.body.password);
         const token = await user.generateAuthToken(); // 직접 정의 함수
         // res.send({user: user.getPublicProfile(), token}); // getPublicProfile: user password, tokens 숨기기 위해
-        res.send({user: user, token});
+        res.send({ user: user, token });
     } catch (e) {
         res.status(400).send();
     }
@@ -56,7 +48,7 @@ router.post('/users/logout', auth, async (req, res) => {
 
 // 모든 세션에서 log out 
 // 로그인 할때마다 token 다름. 여러번(여러 기기로) 로그인한것 다 로그아웃 시키기
-router.post('/users/logoutAll', auth, async(req, res) => {
+router.post('/users/logoutAll', auth, async (req, res) => {
     try {
         req.user.tokens = []; // 다 지움
         await req.user.save(); // 저장
@@ -69,9 +61,9 @@ router.post('/users/logoutAll', auth, async(req, res) => {
 
 // to add middleware to an individual route, pass it in as an argument. 핸들러 전에. (두번떄 인자)
 router.get('/users/me', auth, async (req, res) => {
-    
+
     res.send(req.user);
-    
+
     // try { // '/users'
     //     const users = await User.find({});
     //     res.send(users);
@@ -80,36 +72,25 @@ router.get('/users/me', auth, async (req, res) => {
     // }
 });
 
- // fetch individual user by id. : route parameter
-router.get('/users/:id', async (req, res) => {
-    const _id = req.params.id; // route parameter 로 입력한 값
-    
-    try {
-        const user = await User.findById(_id);
-        if (!user) { // 일치하는 값 없어도 failure 아님.
-            return res.status(404).send(); // 찾는 값 없을 때
-        }
+// // fetch individual user by id. : route parameter
+// router.get('/users/:id', async (req, res) => {
+//     const _id = req.params.id; // route parameter 로 입력한 값
 
-        res.send(user);
-    } catch (e) {
-        res.status(500).send();
-    }
+//     try {
+//         const user = await User.findById(_id);
+//         if (!user) { // 일치하는 값 없어도 failure 아님.
+//             return res.status(404).send(); // 찾는 값 없을 때
+//         }
 
+//         res.send(user);
+//     } catch (e) {
+//         res.status(500).send();
+//     }
+// })
 
-    // User.findById(_id).then((user) => {
-    //     if (!user) { // 일치하는 값 없어도 failure 아님.
-    //         return res.status(404).send(); // 찾는 값 없을 때
-    //     }
+// router.patch('/users/:id', async (req, res) => { // http method, update
+router.patch('/users/me', auth, async (req, res) => { // http method, update
 
-    //     res.send(user);
-
-    // }).catch((e) => {
-    //     res.status(500).send(); // 서버 에러
-    // })
-})
-
-router.patch('/users/:id', async (req, res) => { // http method, update
-    
     const updates = Object.keys(req.body); // 키들 배열로 리턴
 
     // 업데이트 허용할 값들
@@ -120,45 +101,45 @@ router.patch('/users/:id', async (req, res) => { // http method, update
     });
 
     if (!isValidOperation) { // 모두 만족하지 못하면 (하나라도 false면)
-        return res.status(400).send({error: 'Invalid updates!'});
+        return res.status(400).send({ error: 'Invalid updates!' });
     }
 
     try {
         // findByIdAndUpdate bypasses mongoose. it performs direct operation on db. 그래서 runValidators 옵션 작성.
-        const user = await User.findById(req.params.id);
+        // const user = await User.findById(req.params.id);
 
         updates.forEach((update) => {
-            user[update] = req.body[update];
+            req.user[update] = req.body[update];
         })
 
-        await user.save();
+        await req.user.save();
 
         // const user = await User.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true}) // id, 바꿀값, 옵션
 
-        if (!user) {
-            return res.status(404).send();
-        }
-        res.send(user);
+        // if (!user) {
+        //     return res.status(404).send();
+        // }
+        res.send(req.user);
     } catch (e) {
         res.status(400).send(e);
     }
 })
 
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/me', auth, async (req, res) => { // /users/:id
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        // const user = await User.findByIdAndDelete(req.params.id);
+        // const user = await User.findByIdAndDelete(req.user._id); // 자기 자신의 아이디
 
-        if (!user) {
-            return res.status(404).send();
-        }
+        // if (!user) {
+        //     return res.status(404).send();
+        // }
 
-        res.send(user);
+        await req.user.remove();
+
+        res.send(req.user);
     } catch (e) {
         res.status(500).send();
     }
 })
-
-
-
 
 module.exports = router;
